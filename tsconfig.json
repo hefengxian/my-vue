@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "target": "ES2016",
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "jsx": "preserve",
+        "lib": ["ESNext", "DOM"],
+        "baseUrl": ".",
+        "paths": {
+            // 告诉 TS 去哪里找对应的包
+            "@myvue/*": ["packages/*/src/"]
+        }
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
