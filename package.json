@@ -4,15 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node scripts/dev.js reactivity -f global"
+    "dev": "node scripts/dev.js reactivity -f global",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^28.1.8",
     "esbuild": "^0.15.5",
+    "jest": "^28.0.0",
     "minimist": "^1.2.6",
+    "ts-jest": "^28.0.8",
     "typescript": "^4.7.4"
   }
 }
