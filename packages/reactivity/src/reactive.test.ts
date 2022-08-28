@@ -1,5 +1,5 @@
-import {describe, expect, test} from "@jest/globals"
-import {reactive} from '@myvue/reactivity'
+import { describe, expect, test } from "@jest/globals"
+import { reactive } from '@myvue/reactivity'
 
 const target = {
     name: 'Frank',

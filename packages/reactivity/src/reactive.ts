@@ -1,4 +1,5 @@
 import { isObject } from "@myvue/shared"
+import { track, trigger } from "./effect"
 
 // WeakMap key 只能是对象
 const reactiveMap = new WeakMap()
@@ -30,10 +31,17 @@ export function reactive(target: any) {
             if (key === ReactivityFlags.IS_REACTIVE) {
                 return true
             }
+            // 映射属性与 effect 的关系
+            track(target, key)
             return Reflect.get(target, key, receiver)
         },
-        set(target, key, value, receiver) {
-            return Reflect.set(target, key, value, receiver)
+        set(target, key, value, receiver) { 
+            const oldVal = target[key]
+            const result = Reflect.set(target, key, value, receiver)
+            if (oldVal !== value) {     // 如果值有变动才进行更新
+                trigger(target, key, oldVal, value)
+            }
+            return result
         },
     })
 
