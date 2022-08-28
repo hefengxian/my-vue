@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node scripts/dev.js reactivity -f global",
-    "test": "jest"
+    "test": "jest --verbose --watch"
   },
   "keywords": [],
   "author": "",
