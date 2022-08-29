@@ -58,4 +58,32 @@ describe('Test effect', () => {
         state.num = 20
         expect(counter).toBe(1)
     })
+
+    test('Should not run when change name', () => {
+        const state = reactive({
+            name: 'Frank',
+            age: 30,
+            flag: true,
+        })
+
+        let counter = 0
+        let val: number | string
+        effect(() => {
+            counter++
+            val = state.flag ? state.name : state.age
+        })
+        expect(val).toBe('Frank')
+        expect(counter).toBe(1)
+        state.flag = false
+        expect(val).toBe(30)
+        expect(counter).toBe(2)
+
+        // 因为 flag 已经是 false 了，此时 name 变化 effect 不应该被执行
+        state.name = 'Vivia'
+        expect(counter).toBe(2)
+        state.age = 34
+        expect(counter).toBe(3)
+    })
 })
+
+

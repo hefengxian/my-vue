@@ -2,6 +2,22 @@
 // 导出的是个引用而不是值，外面值变了之后这里也会变
 export let activeEffect: null | ReactiveEffect = null
 
+function cleanupEffect(effect: ReactiveEffect) {
+    const { deps } = effect
+    // 这里为什么要循环的清理，这里的目的不是清理 deps 这个数组
+    // 而是要清理里面的 Set，而且是各个的属性对应的都要清理
+    // 另外需要注意的是 Set 特性，不能边加边清理，会陷入死循环，而
+    // 数组不会，所以后面在收集的时候会弄一个拷贝
+    for (let set of deps) {
+        // 这里由于持有的是 Set 的引用，targetMap 里也持有了
+        // 这里删掉了那么那边也没有了，而不是直接删除 deps 数组持有的引用
+        set.delete(effect)
+    }
+    // JS 中把数组的 length 设置为 0 会清空数组
+    // 所以下面的代码可以替换成 `effect.deps.length = 0`
+    effect.deps = []
+}
+
 /**
  * 响应 Effect 类
  */
@@ -30,6 +46,8 @@ class ReactiveEffect {
         try {
             this.parent = activeEffect
             activeEffect = this
+            // 执行函数之前，清理掉之前收集的依赖，然后重新收集
+            cleanupEffect(this)
             return this.fn()
         } finally {
             // 执行完之后就将激活的 effect 设置为自己的父 effect 
@@ -78,8 +96,11 @@ export function trigger(target: any, key: string | Symbol, oldVal: any, newVal: 
     const depsMap = targetMap.get(target)
     // 如果这个对象没有被依赖那么什么也不做
     if (!depsMap) return
-    const effects = depsMap.get(key)
+    let effects = depsMap.get(key)
+
     if (effects) {
+        // 由于 Set 边设置边删除（cleanupEffect）会死循环，做一个拷贝
+        effects = new Set(effects)
         effects.forEach(effect => {
             // 如果在 effect 中又更新了依赖，那么就会无限循环，所以需要屏蔽一下
             if (activeEffect !== effect) {
