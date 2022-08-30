@@ -5,8 +5,8 @@ import { track, trigger } from "./effect"
 const reactiveMap = new WeakMap()
 
 // 标记是否已经代理过了
-const enum ReactivityFlags {
-    IS_REACTIVE = '__v_isReactive'
+export const enum ReactivityFlags {
+    IS_REACTIVE = '__v_isReactive',
 }
 
 export function reactive(target: any) {
@@ -33,7 +33,12 @@ export function reactive(target: any) {
             }
             // 映射属性与 effect 的关系
             track(target, key)
-            return Reflect.get(target, key, receiver)
+            let res = Reflect.get(target, key, receiver)
+            // 深度代理
+            if (isObject(res)) {
+                res = reactive(res)
+            }
+            return res
         },
         set(target, key, value, receiver) { 
             const oldVal = target[key]
