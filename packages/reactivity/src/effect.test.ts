@@ -84,6 +84,28 @@ describe('Test effect', () => {
         state.age = 34
         expect(counter).toBe(3)
     })
+
+    test('Should stop reactive of the effect', () => {
+        const state = reactive({
+            name: 'Frank',
+            age: 30,
+        })
+        let counter = 0
+        let name: string
+        const runner = effect(() => {
+            counter++
+            console.log('xxxx')
+            name = state.name
+        })
+        runner.effect.stop()
+
+        expect(typeof runner).toBe('function')
+        expect(typeof runner.effect.stop).toBe('function')
+        state.name = 'Vivy'
+        expect(counter).toBe(1)
+        runner()
+        expect(counter).toBe(2)
+    })
 })
 
 

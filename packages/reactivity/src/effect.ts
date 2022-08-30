@@ -38,7 +38,7 @@ class ReactiveEffect {
     run() {
         // 如果不激活就不收集依赖，就是直接执行函数
         if (!this.active) {
-            this.fn()
+            return this.fn()
         }
         // 依赖搜集
         // 核心就是将当前的 effect 和渲染的属性关联起来
@@ -52,7 +52,18 @@ class ReactiveEffect {
         } finally {
             // 执行完之后就将激活的 effect 设置为自己的父 effect 
             activeEffect = this.parent
-            this.parent = null
+            // this.parent = null
+        }
+    }
+
+    /**
+     * 停止响应
+     */
+    stop() {
+        if (this.active) {
+            this.active = false
+            // 清理自己已经注册的依赖
+            cleanupEffect(this)
         }
     }
 }
@@ -61,6 +72,13 @@ export function effect(fn: Function) {
     const rectiveEffect = new ReactiveEffect(fn)
     // 默认先执行一次
     rectiveEffect.run()
+
+    // 这里要修改一下 this 的指向，不然会直接指向全局
+    // run() 方法里使用 this 的地方就会报错
+    const runner: {(): any, effect: ReactiveEffect} = rectiveEffect.run.bind(rectiveEffect)
+    // 给 runner 添加 effect 属性，指向当前的 ReactiveEffect
+    runner.effect = rectiveEffect
+    return runner
 }
 
 const targetMap = new WeakMap<object, Map<string | Symbol, Set<ReactiveEffect>>>()
@@ -87,7 +105,7 @@ export function track(target: object, key: string | Symbol) {
     // 判断是否需要加入，其实也可以不判断 Set 自动会排重
     if (!dep.has(activeEffect)) {
         dep.add(activeEffect)
-        // 需要记录双向依赖，方便后续清理属性对应的 Effect（暂时还没有用到）
+        // 需要记录双向依赖，方便后续清理属性对应的 Effect
         activeEffect.deps.push(dep)
     }
 }
