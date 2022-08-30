@@ -33,7 +33,7 @@ class ReactiveEffect {
     deps: Set<ReactiveEffect>[] = []
 
     // 这里参数上加上 public 那么默认会绑定到 this 上，无需显式赋值
-    constructor(public fn: Function) { }
+    constructor(public fn: Function, public schuduler?: Function) { }
 
     run() {
         // 如果不激活就不收集依赖，就是直接执行函数
@@ -68,8 +68,8 @@ class ReactiveEffect {
     }
 }
 
-export function effect(fn: Function) {
-    const rectiveEffect = new ReactiveEffect(fn)
+export function effect(fn: Function, options?: {scheduler: Function}) {
+    const rectiveEffect = new ReactiveEffect(fn, options?.scheduler)
     // 默认先执行一次
     rectiveEffect.run()
 
@@ -122,7 +122,11 @@ export function trigger(target: any, key: string | Symbol, oldVal: any, newVal: 
         effects.forEach(effect => {
             // 如果在 effect 中又更新了依赖，那么就会无限循环，所以需要屏蔽一下
             if (activeEffect !== effect) {
-                effect.run()
+                if (effect.schuduler) {
+                    effect.schuduler()
+                } else {
+                    effect.run()
+                }
             }
         })
     }

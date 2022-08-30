@@ -94,7 +94,6 @@ describe('Test effect', () => {
         let name: string
         const runner = effect(() => {
             counter++
-            console.log('xxxx')
             name = state.name
         })
         runner.effect.stop()
@@ -104,6 +103,33 @@ describe('Test effect', () => {
         state.name = 'Vivy'
         expect(counter).toBe(1)
         runner()
+        expect(counter).toBe(2)
+    })
+
+    test('Should run as scheduler', () => {
+        let counter = 0
+        const state = reactive({
+            name: 'Frank',
+            age: 30,
+        })
+        let text = ''
+        const runner = effect(() => {
+            counter++
+            text = `My name is ${state.name}, I'm ${state.age} years old.`
+        }, {
+            scheduler() {
+                if (state.name == 'AA') {
+                    runner()
+                }
+            }
+        })
+
+        // 合并变动，统一执行，而不是每次直接执行
+        state.name = 'Vivy'
+        state.name = 'Bob'
+        state.age = 18
+        state.name = 'AA'
+
         expect(counter).toBe(2)
     })
 })
