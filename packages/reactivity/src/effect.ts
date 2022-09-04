@@ -21,7 +21,7 @@ function cleanupEffect(effect: ReactiveEffect) {
 /**
  * 响应 Effect 类
  */
-class ReactiveEffect {
+export class ReactiveEffect {
     // 是否激活，暂时没有使用
     active: boolean = true
 
@@ -102,8 +102,13 @@ export function track(target: object, key: string | Symbol) {
         depsMap.set(key, dep)
     }
 
+    trackEffects(dep)
+}
+
+
+export const trackEffects = (dep: Set<ReactiveEffect>) => {
     // 判断是否需要加入，其实也可以不判断 Set 自动会排重
-    if (!dep.has(activeEffect)) {
+    if (activeEffect && !dep.has(activeEffect)) {
         dep.add(activeEffect)
         // 需要记录双向依赖，方便后续清理属性对应的 Effect
         activeEffect.deps.push(dep)
@@ -117,17 +122,26 @@ export function trigger(target: any, key: string | Symbol, oldVal: any, newVal: 
     let effects = depsMap.get(key)
 
     if (effects) {
-        // 由于 Set 边设置边删除（cleanupEffect）会死循环，做一个拷贝
-        effects = new Set(effects)
-        effects.forEach(effect => {
-            // 如果在 effect 中又更新了依赖，那么就会无限循环，所以需要屏蔽一下
-            if (activeEffect !== effect) {
-                if (effect.schuduler) {
-                    effect.schuduler()
-                } else {
-                    effect.run()
-                }
-            }
-        })
+        triggerEffects(effects)
     }
+}
+
+/**
+ * 触发更新
+ * 
+ * @param effects 
+ */
+export const triggerEffects = (effects: Set<ReactiveEffect>) => {
+    // 由于 Set 边设置边删除（cleanupEffect）会死循环，做一个拷贝
+    effects = new Set(effects)
+    effects.forEach(effect => {
+        // 如果在 effect 中又更新了依赖，那么就会无限循环，所以需要屏蔽一下
+        if (activeEffect !== effect) {
+            if (effect.schuduler) {
+                effect.schuduler()
+            } else {
+                effect.run()
+            }
+    }
+})
 }
