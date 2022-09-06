@@ -36,7 +36,23 @@ class RefImpl {
     }
 }
 
+class ObjectRefImpl {   // 这个类非常简单，主要是将 .value 属性代理到原对象上去
+    constructor(public obj: any, public key: any) {}
+
+    get value() {
+        return this.obj[this.key]
+    }
+
+    set value(newValue: any) {
+        this.obj[this.key] = newValue
+    }
+}
+
 export function ref(value: any) {
     return new RefImpl(value)
+}
+
+export function toRef(object: any, key: any) {
+    return new ObjectRefImpl(object, key)
 }
 
