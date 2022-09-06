@@ -48,14 +48,16 @@ class ObjectRefImpl {   // 这个类非常简单，主要是将 .value 属性代
     }
 }
 
+// 通常用法
 export function ref(value: any) {
     return new RefImpl(value)
 }
 
+
+// 下面两个方法都是对应解构属性
 export function toRef(object: any, key: any) {
     return new ObjectRefImpl(object, key)
 }
-
 export function toRefs(obj: any): any {
     const result = Array.isArray(obj) ? new Array(obj.length) : {}
     for (let key in obj) {
