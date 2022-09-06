@@ -65,3 +65,22 @@ export function toRefs(obj: any): any {
     }
     return result
 }
+
+// 模板里使用 ref 不用写 .value 的实现
+export function proxyRefs(obj: any) {
+    return new Proxy(obj, {
+        get(target, key, receiver) {
+            const result = Reflect.get(target, key, receiver)
+            // 这里相当于在代理里面把 .value 给点了，但是如果 result 只是个普通属性那么直接返回
+            return result.__v_isRef ? result.value : result
+        },
+        set(target, key, value, receiver) {
+            let oldValue = target[key]
+            if (oldValue.__v_isRef) {
+                oldValue = value
+                return true
+            }
+            return Reflect.set(target, key, value, receiver)
+        }
+    })
+}

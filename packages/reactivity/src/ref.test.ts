@@ -1,7 +1,7 @@
 import { describe, test, expect } from '@jest/globals'
 import { effect } from './effect'
 import { reactive, ReactivityFlags } from './reactive'
-import { ref, toRef, toRefs } from './ref'
+import { proxyRefs, ref, toRef, toRefs } from './ref'
 
 
 describe('Ref testing', () => {
@@ -58,5 +58,21 @@ describe('Ref testing', () => {
         expect(desc).toBe('Jerry 23')
         age.value = 30
         expect(desc).toBe('Jerry 30')
+    })
+
+    test("Should proxy togather", () => {
+        const name = ref('Frank')
+        const age = ref(23)
+        const person = proxyRefs({name, age, gender: 'male'})
+        let desc = ''
+        effect(() => {
+            desc = [person.name, person.age, person.gender].join(',')
+        })
+        expect(desc).toBe('Frank,23,male')
+        name.value = 'Vivy'
+        age.value = 18
+        person.gender = 'female'
+        // 由于 gender 不是 ref 所以不具备响应式功能
+        expect(desc).toBe('Vivy,18,male')
     })
 })
