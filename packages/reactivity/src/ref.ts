@@ -56,3 +56,10 @@ export function toRef(object: any, key: any) {
     return new ObjectRefImpl(object, key)
 }
 
+export function toRefs(obj: any): any {
+    const result = Array.isArray(obj) ? new Array(obj.length) : {}
+    for (let key in obj) {
+        result[key] = toRef(obj, key)
+    }
+    return result
+}

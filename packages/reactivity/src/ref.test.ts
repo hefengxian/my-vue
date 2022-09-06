@@ -1,7 +1,7 @@
 import { describe, test, expect } from '@jest/globals'
 import { effect } from './effect'
 import { reactive, ReactivityFlags } from './reactive'
-import { ref, toRef } from './ref'
+import { ref, toRef, toRefs } from './ref'
 
 
 describe('Ref testing', () => {
@@ -23,12 +23,12 @@ describe('Ref testing', () => {
     })
 
     test("Should be a proxy when target is an object", () => {
-        const person = ref({name: 'Frank', age: 23})
+        const person = ref({ name: 'Frank', age: 23 })
         expect(person.value[ReactivityFlags.IS_REACTIVE]).toBe(true)
     })
 
     test("Should property be ref after toRef", () => {
-        const person = reactive({name: 'Frank', age: 23})
+        const person = reactive({ name: 'Frank', age: 23 })
         const name = toRef(person, 'name')
 
         let desc = ''
@@ -43,5 +43,20 @@ describe('Ref testing', () => {
         // 直接改原对象也可以
         person.name = 'Jerry'
         expect(desc).toBe('My name is Jerry')
+    })
+
+    test("Should deconstruct all property to ref", () => {
+        const person = reactive({ name: 'Frank', age: 23 })
+        let { name, age } = toRefs(person)
+
+        let desc = ''
+        effect(() => {
+            desc = `${name.value} ${age.value}`
+        })
+        expect(desc).toBe('Frank 23')
+        person.name = 'Jerry'
+        expect(desc).toBe('Jerry 23')
+        age.value = 30
+        expect(desc).toBe('Jerry 30')
     })
 })
